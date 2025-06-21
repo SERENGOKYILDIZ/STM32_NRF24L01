@@ -106,5 +106,11 @@ void nrf24_init(NRF24L01* hnrf)
 	CE_Disable(hnrf);
 	CS_UnSelect(hnrf);
 
-
+	nrf24_writeReg(hnrf, NRF24L01_CONFIG, 0);			// Will be configured later
+	nrf24_writeReg(hnrf, NRF24L01_EN_AA, 0);			// No Auto ACK
+	nrf24_writeReg(hnrf, NRF24L01_EN_RXADDR, 0);		// Not Enabling any pipe right now
+	nrf24_writeReg(hnrf, NRF24L01_SETUP_AW, 0x03);		// 5 Bytes for the TX/RX address
+	nrf24_writeReg(hnrf, NRF24L01_SETUP_RETR, 0);		// No Retransmission
+	nrf24_writeReg(hnrf, NRF24L01_RF_CH, 0);			// Will be setup during TX or RX
+	nrf24_writeReg(hnrf, NRF24L01_RF_SETUP, 0x0E);		// Power = 0db, DateRate = 2Mpbs
 }

@@ -59,6 +59,11 @@ static void MX_SPI1_Init(void);
 
 #include "NRF24L01.h"
 
+#define NRF24L01_CE_PORT 	GPIOC
+#define NRF24L01_CE_PIN  	GPIO_PIN_4
+
+#define NRF24L01_CS_PORT 	GPIOC
+#define NRF24L01_CS_PIN  	GPIO_PIN_5
 
 /* USER CODE END 0 */
 
