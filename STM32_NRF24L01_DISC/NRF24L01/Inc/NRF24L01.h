@@ -52,7 +52,6 @@
 #define NRF24L01_REUSE_TX_PL		0XE3
 #define NRF24L01_NOP				0XFF
 
-
 typedef struct{
 	GPIO_TypeDef* PORT;
 	uint16_t PIN;
@@ -68,5 +67,9 @@ void nrf24_init(NRF24L01* hnrf);
 
 void nrf24_TxMode(NRF24L01* hnrf, uint8_t* address, uint8_t channel);
 uint8_t nrf24_Transmit(NRF24L01* hnrf,uint8_t* data);
+
+void nrf24_RxMode(NRF24L01* hnrf, uint8_t* address, uint8_t channel);
+uint8_t nrf24_IsDataAvailable(NRF24L01* hnrf, int pipeNum);
+void nrf24_Receive (NRF24L01* hnrf, uint8_t* data);
 
 #endif /* INC_NRF24L01_H_ */

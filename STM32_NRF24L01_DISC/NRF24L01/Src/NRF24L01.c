@@ -126,7 +126,7 @@ void nrf24_TxMode(NRF24L01* hnrf, uint8_t* address, uint8_t channel)
 	nrf24_writeReg(hnrf, NRF24L01_RF_CH, channel);				// Select the channel
 	nrf24_writeRegMulti(hnrf, NRF24L01_TX_ADDR, address, 5); 	// Write the TX address
 
-	// Power up the device
+	// Power up the device in TX mode
 	uint8_t config = nrf24_readReg(hnrf, NRF24L01_CONFIG);
 	config = config | (1 << 1);
 	nrf24_writeReg(hnrf, NRF24L01_CONFIG, config);
@@ -136,7 +136,7 @@ void nrf24_TxMode(NRF24L01* hnrf, uint8_t* address, uint8_t channel)
 }
 
 // Transmit the data
-uint8_t nrf24_Transmit(NRF24L01* hnrf,uint8_t* data)
+uint8_t nrf24_Transmit(NRF24L01* hnrf, uint8_t* data)
 {
 	uint8_t cmdToSend = 0;
 
@@ -165,4 +165,67 @@ uint8_t nrf24_Transmit(NRF24L01* hnrf,uint8_t* data)
 	}
 
 	return 0;
+}
+
+// Setup the RX Mode
+void nrf24_RxMode(NRF24L01* hnrf, uint8_t* address, uint8_t channel)
+{
+	// Disable the chip before configuring the device
+	CE_Disable(hnrf);
+
+	nrf24_writeReg(hnrf, NRF24L01_RF_CH, channel);					// Select the channel
+
+	// Select data pipe 1
+	uint8_t EN_RXADDR = nrf24_readReg(hnrf, NRF24L01_TX_ADDR);
+	EN_RXADDR = EN_RXADDR | (1 << 2);
+	nrf24_writeReg(hnrf, NRF24L01_EN_RXADDR, EN_RXADDR);
+
+	nrf24_writeRegMulti(hnrf, NRF24L01_RX_ADDR_P1, address, 5); 	// Write the RX address
+	nrf24_writeReg(hnrf, NRF24L01_RX_PW_P1, 32);                    // 32 bytes payload size for pipe 1
+
+	// Power up the device in RX mode
+	uint8_t config = nrf24_readReg(hnrf, NRF24L01_CONFIG);
+	config = config | (1 << 1) | (1 << 0);
+	nrf24_writeReg(hnrf, NRF24L01_CONFIG, config);
+
+	// Enable the chip after configuring the device
+	CE_Enable(hnrf);
+}
+
+// Wait coming a data
+uint8_t nrf24_IsDataAvailable(NRF24L01* hnrf, int pipeNum)
+{
+	uint8_t status = nrf24_readReg(hnrf, NRF24L01_STATUS);
+
+	if((status & (1 << 6)) && (status & (pipeNum << 1)))
+	{
+		nrf24_writeReg(hnrf, NRF24L01_STATUS, (1 << 6));
+		return 1;
+	}
+
+	return 0;
+}
+
+// Receiver the data
+void nrf24_Receive (NRF24L01* hnrf, uint8_t* data)
+{
+	uint8_t cmdToSend = 0;
+
+	//Select device
+	CS_Select(hnrf);
+
+	// Payload command
+	cmdToSend = NRF24L01_R_RX_PAYLOAD;
+	HAL_SPI_Transmit(hnrf->hspi, &cmdToSend, 1, 100);
+
+	// Send the payload
+	HAL_SPI_Receive(hnrf->hspi, data, 32, 1000);
+
+	//Unselect device
+	CS_UnSelect(hnrf);
+
+	cmdToSend = NRF24L01_FLUSH_RX;
+	nrf24_sendCmd(hnrf, cmdToSend);
+
+	HAL_Delay(1);
 }
