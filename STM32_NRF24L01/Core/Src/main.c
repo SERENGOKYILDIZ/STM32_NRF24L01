@@ -57,6 +57,9 @@ static void MX_SPI1_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+#include "NRF24L01.h"
+
+
 /* USER CODE END 0 */
 
 /**

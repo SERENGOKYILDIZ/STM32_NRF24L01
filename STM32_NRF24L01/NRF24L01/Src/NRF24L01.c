@@ -16,16 +16,17 @@ void CS_UnSelect(NRF24L01* hnrf)
 	HAL_GPIO_WritePin(hnrf->CS.PORT, hnrf->CS.PIN, GPIO_PIN_SET);
 }
 
-void CE_Select(NRF24L01* hnrf)
+void CE_Enable(NRF24L01* hnrf)
 {
 	HAL_GPIO_WritePin(hnrf->CE.PORT, hnrf->CE.PIN, GPIO_PIN_SET);
 }
 
-void CE_UnSelect(NRF24L01* hnrf)
+void CE_Disable(NRF24L01* hnrf)
 {
 	HAL_GPIO_WritePin(hnrf->CE.PORT, hnrf->CE.PIN, GPIO_PIN_RESET);
 }
 
+// Write a single byte to particular register
 void nrf24_writeReg(NRF24L01* hnrf, uint8_t address, uint8_t data)
 {
 	uint8_t buf[2];
@@ -41,7 +42,69 @@ void nrf24_writeReg(NRF24L01* hnrf, uint8_t address, uint8_t data)
 	CS_UnSelect(hnrf);
 }
 
+// Write multiple bytes starting from a particular register
 void nrf24_writeRegMulti(NRF24L01* hnrf, uint8_t address, uint8_t* data, int size)
 {
+	uint8_t buf[2];
+	buf[0] = address | (1<<5);
+
+	// Pull the CS Pin Low to select the device
+	CS_Select(hnrf);
+
+	HAL_SPI_Transmit(hnrf->hspi, buf, 1, 1000);
+	HAL_SPI_Transmit(hnrf->hspi, data, size, 1000);
+
+	// Pull the CS Pin High to release the device
+	CS_UnSelect(hnrf);
+}
+
+// Read a single byte to register
+uint8_t nrf24_readReg(NRF24L01* hnrf, uint8_t address)
+{
+	uint8_t data = 0x00;
+
+	// Pull the CS Pin Low to select the device
+	CS_Select(hnrf);
+
+	HAL_SPI_Transmit(hnrf->hspi, &address, 1, 100);
+	HAL_SPI_Receive(hnrf->hspi, &data, 1, 100);
+
+	// Pull the CS Pin High to release the device
+	CS_UnSelect(hnrf);
+
+	return data;
+}
+
+// Read multiple bytes starting from register
+void nrf24_readRegMulti(NRF24L01* hnrf, uint8_t address, uint8_t* data, int size)
+{
+	// Pull the CS Pin Low to select the device
+	CS_Select(hnrf);
+
+	HAL_SPI_Transmit(hnrf->hspi, &address, 1, 100);
+	HAL_SPI_Receive(hnrf->hspi, data, size, 1000);
+
+	// Pull the CS Pin High to release the device
+	CS_UnSelect(hnrf);
+}
+
+// Send the command the NRF
+void nrf24_sendCmd(NRF24L01* hnrf, uint8_t cmd)
+{
+	// Pull the CS Pin Low to select the device
+	CS_Select(hnrf);
+
+	HAL_SPI_Transmit(hnrf->hspi, &cmd, 1, 100);
+
+	// Pull the CS Pin High to release the device
+	CS_UnSelect(hnrf);
+}
+
+void nrf24_init(NRF24L01* hnrf)
+{
+	// Disable the chip before configuring the device
+	CE_Disable(hnrf);
+	CS_UnSelect(hnrf);
+
 
 }
