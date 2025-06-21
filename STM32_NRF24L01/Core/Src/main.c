@@ -59,11 +59,14 @@ static void MX_SPI1_Init(void);
 
 #include "NRF24L01.h"
 
-#define NRF24L01_CE_PORT 	GPIOC
-#define NRF24L01_CE_PIN  	GPIO_PIN_4
+#define CE_PORT 	GPIOC
+#define CE_PIN  	GPIO_PIN_4
 
-#define NRF24L01_CS_PORT 	GPIOC
-#define NRF24L01_CS_PIN  	GPIO_PIN_5
+#define CS_PORT 	GPIOC
+#define CS_PIN  	GPIO_PIN_5
+
+uint8_t TxAddress[]={0xEE, 0xDD, 0xCC, 0xBB, 0xAA};
+uint8_t TxData[]="Hello World\n";
 
 /* USER CODE END 0 */
 
@@ -99,6 +102,16 @@ int main(void)
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
 
+  NRF24L01 nrf24 = {
+		  .hspi = &hspi1,
+		  .CE={CE_PORT, CE_PIN},
+		  .CS={CS_PORT, CS_PIN}
+  };
+
+  nrf24_init(&nrf24);
+
+  nrf24_TxMode(&nrf24, TxAddress, 10);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -106,8 +119,12 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-
     /* USER CODE BEGIN 3 */
+	  if(nrf24_Transmit(&nrf24, TxData) == 1)
+	  {
+		  HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_All);
+	  }
+	  HAL_Delay(1000);
   }
   /* USER CODE END 3 */
 }

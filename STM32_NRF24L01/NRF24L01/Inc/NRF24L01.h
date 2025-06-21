@@ -64,4 +64,9 @@ typedef struct{
 	GpioPin CS;
 }NRF24L01;
 
+void nrf24_init(NRF24L01* hnrf);
+
+void nrf24_TxMode(NRF24L01* hnrf, uint8_t* address, uint8_t channel);
+uint8_t nrf24_Transmit(NRF24L01* hnrf,uint8_t* data);
+
 #endif /* INC_NRF24L01_H_ */

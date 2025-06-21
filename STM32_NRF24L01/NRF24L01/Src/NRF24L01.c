@@ -104,7 +104,6 @@ void nrf24_init(NRF24L01* hnrf)
 {
 	// Disable the chip before configuring the device
 	CE_Disable(hnrf);
-	CS_UnSelect(hnrf);
 
 	nrf24_writeReg(hnrf, NRF24L01_CONFIG, 0);			// Will be configured later
 	nrf24_writeReg(hnrf, NRF24L01_EN_AA, 0);			// No Auto ACK
@@ -113,4 +112,57 @@ void nrf24_init(NRF24L01* hnrf)
 	nrf24_writeReg(hnrf, NRF24L01_SETUP_RETR, 0);		// No Retransmission
 	nrf24_writeReg(hnrf, NRF24L01_RF_CH, 0);			// Will be setup during TX or RX
 	nrf24_writeReg(hnrf, NRF24L01_RF_SETUP, 0x0E);		// Power = 0db, DateRate = 2Mpbs
+
+	// Enable the chip after configuring the device
+	CE_Enable(hnrf);
+}
+
+// Setup the TX Mode
+void nrf24_TxMode(NRF24L01* hnrf, uint8_t* address, uint8_t channel)
+{
+	// Disable the chip before configuring the device
+	CE_Disable(hnrf);
+
+	nrf24_writeReg(hnrf, NRF24L01_RF_CH, channel);				// Select the channel
+	nrf24_writeRegMulti(hnrf, NRF24L01_TX_ADDR, address, 5); 	// Write the TX address
+
+	// Power up the device
+	uint8_t config = nrf24_readReg(hnrf, NRF24L01_CONFIG);
+	config = config | (1 << 1);
+	nrf24_writeReg(hnrf, NRF24L01_CONFIG, config);
+
+	// Enable the chip after configuring the device
+	CE_Enable(hnrf);
+}
+
+// Transmit the data
+uint8_t nrf24_Transmit(NRF24L01* hnrf,uint8_t* data)
+{
+	uint8_t cmdToSend = 0;
+
+	//Select device
+	CS_Select(hnrf);
+
+	// Payload command
+	cmdToSend = NRF24L01_W_TX_PAYLOAD;
+	HAL_SPI_Transmit(hnrf->hspi, &cmdToSend, 1, 100);
+
+	// Send the payload
+	HAL_SPI_Transmit(hnrf->hspi, data, 32, 1000);
+
+	//Unselect device
+	CS_UnSelect(hnrf);
+
+	HAL_Delay(1);
+
+	uint8_t fifoStatus = nrf24_readReg(hnrf, NRF24L01_FIFO_STATUS);
+	if((fifoStatus & (1 << 4)) && (!(fifoStatus & (1 << 3))))
+	{
+		cmdToSend = NRF24L01_FLUSH_TX;
+		nrf24_sendCmd(hnrf, cmdToSend);
+
+		return 1;
+	}
+
+	return 0;
 }
