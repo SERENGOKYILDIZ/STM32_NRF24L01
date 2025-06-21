@@ -10,17 +10,17 @@ This project demonstrates wireless data communication between two STM32 microcon
 <div style="text-align: center;">
   <img src="images/nrf24.jpg" alt="NRF24L01 Modules" width="500">
 </div>
-These are the modules that are generally
+These are the modules that are generally.<br><br>
 
 <div style="text-align: center;">
   <img src="images/nrf24_adapter.jpg" alt="NRF24L01 ADAPTER FOR 5V" width="500">
 </div>
-This adapter provides a clean Jul 3.3V supply for our module. You need to feed it with 5V.
+This adapter provides a clean Jul 3.3V supply for our module. You need to feed it with 5V.<br><br>
 
 <div style="text-align: center;">
   <img src="images/circuit.jpg" alt="CIRCUIT" width="500">
 </div>
-The view of the circuit I made myself
+The view of the circuit I made myself.<br><br>
 
 ---
 
@@ -135,7 +135,7 @@ while (1) {
 
 You can download the NRF24L01 datasheet as PDF:
 
-[⬇️ Download Datasheet (PDF)](https://raw.githubusercontent.com/SERENGOKYILDIZ/STM32_NRF24L01/main/docs/nrf24l01_datasheet.pdf)
+[⬇️ Download Datasheet (PDF)](https://github.com/SERENGOKYILDIZ/STM32_NRF24L01/raw/main/docs/nRF24L01P_PS_v1.0.pdf)
 
 ---
 
