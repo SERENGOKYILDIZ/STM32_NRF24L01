@@ -57,6 +57,17 @@ static void MX_SPI1_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+#include "NRF24L01.h"
+
+#define CE_PORT 	GPIOB
+#define CE_PIN  	GPIO_PIN_0
+
+#define CS_PORT 	GPIOB
+#define CS_PIN  	GPIO_PIN_1
+
+uint8_t TxAddress[]={0xEE, 0xDD, 0xCC, 0xBB, 0xAA};
+uint8_t TxData[]="Hello World\n";
+
 /* USER CODE END 0 */
 
 /**
@@ -91,6 +102,17 @@ int main(void)
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
 
+  NRF24L01 nrf24 = {
+		  .hspi = &hspi1,
+		  .CE={CE_PORT, CE_PIN},
+		  .CS={CS_PORT, CS_PIN}
+  };
+
+  nrf24_init(&nrf24);
+
+  //For Transmitter
+  nrf24_TxMode(&nrf24, TxAddress, 10);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -100,6 +122,13 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+	//////---> Transmitter Code <---//////
+	if(nrf24_Transmit(&nrf24, TxData) == 1)
+	{
+	  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
+	}
+	HAL_Delay(1000);
+	//////////////////////////////////////
   }
   /* USER CODE END 3 */
 }
@@ -194,12 +223,23 @@ static void MX_GPIO_Init(void)
   /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0|GPIO_PIN_1, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin : PC13 */
+  GPIO_InitStruct.Pin = GPIO_PIN_13;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PB0 PB1 */
   GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1;
