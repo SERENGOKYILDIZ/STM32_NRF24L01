@@ -100,10 +100,57 @@ void nrf24_sendCmd(NRF24L01* hnrf, uint8_t cmd)
 	CS_UnSelect(hnrf);
 }
 
+void nrf24_reset(NRF24L01* hnrf, uint8_t REG)
+{
+	if (REG == NRF24L01_STATUS)
+	{
+		nrf24_writeReg(hnrf, NRF24L01_STATUS, 0x00);
+	}
+
+	else if (REG == NRF24L01_FIFO_STATUS)
+	{
+		nrf24_writeReg(hnrf, NRF24L01_FIFO_STATUS, 0x11);
+	}
+
+	else {
+	nrf24_writeReg(hnrf, NRF24L01_CONFIG, 0x08);
+	nrf24_writeReg(hnrf, NRF24L01_EN_AA, 0x3F);
+	nrf24_writeReg(hnrf, NRF24L01_EN_RXADDR, 0x03);
+	nrf24_writeReg(hnrf, NRF24L01_SETUP_AW, 0x03);
+	nrf24_writeReg(hnrf, NRF24L01_SETUP_RETR, 0x03);
+	nrf24_writeReg(hnrf, NRF24L01_RF_CH, 0x02);
+	nrf24_writeReg(hnrf, NRF24L01_RF_SETUP, 0x0E);
+	nrf24_writeReg(hnrf, NRF24L01_STATUS, 0x00);
+	nrf24_writeReg(hnrf, NRF24L01_OBSERVE_TX, 0x00);
+	nrf24_writeReg(hnrf, NRF24L01_CD, 0x00);
+	uint8_t rx_addr_p0_def[5] = {0xE7, 0xE7, 0xE7, 0xE7, 0xE7};
+	nrf24_writeRegMulti(hnrf, NRF24L01_RX_ADDR_P0, rx_addr_p0_def, 5);
+	uint8_t rx_addr_p1_def[5] = {0xC2, 0xC2, 0xC2, 0xC2, 0xC2};
+	nrf24_writeRegMulti(hnrf, NRF24L01_RX_ADDR_P1, rx_addr_p1_def, 5);
+	nrf24_writeReg(hnrf, NRF24L01_RX_ADDR_P2, 0xC3);
+	nrf24_writeReg(hnrf, NRF24L01_RX_ADDR_P3, 0xC4);
+	nrf24_writeReg(hnrf, NRF24L01_RX_ADDR_P4, 0xC5);
+	nrf24_writeReg(hnrf, NRF24L01_RX_ADDR_P5, 0xC6);
+	uint8_t tx_addr_def[5] = {0xE7, 0xE7, 0xE7, 0xE7, 0xE7};
+	nrf24_writeRegMulti(hnrf, NRF24L01_TX_ADDR, tx_addr_def, 5);
+	nrf24_writeReg(hnrf, NRF24L01_RX_PW_P0, 0);
+	nrf24_writeReg(hnrf, NRF24L01_RX_PW_P1, 0);
+	nrf24_writeReg(hnrf, NRF24L01_RX_PW_P2, 0);
+	nrf24_writeReg(hnrf, NRF24L01_RX_PW_P3, 0);
+	nrf24_writeReg(hnrf, NRF24L01_RX_PW_P4, 0);
+	nrf24_writeReg(hnrf, NRF24L01_RX_PW_P5, 0);
+	nrf24_writeReg(hnrf, NRF24L01_FIFO_STATUS, 0x11);
+	nrf24_writeReg(hnrf, NRF24L01_DYNPD, 0);
+	nrf24_writeReg(hnrf, NRF24L01_FEATURE, 0);
+	}
+}
+
 void nrf24_init(NRF24L01* hnrf)
 {
 	// Disable the chip before configuring the device
 	CE_Disable(hnrf);
+
+	nrf24_reset(hnrf, 0);
 
 	nrf24_writeReg(hnrf, NRF24L01_CONFIG, 0);			// Will be configured later
 	nrf24_writeReg(hnrf, NRF24L01_EN_AA, 0);			// No Auto ACK
@@ -160,6 +207,8 @@ uint8_t nrf24_Transmit(NRF24L01* hnrf, uint8_t* data)
 	{
 		cmdToSend = NRF24L01_FLUSH_TX;
 		nrf24_sendCmd(hnrf, cmdToSend);
+
+		nrf24_reset(hnrf, NRF24L01_FIFO_STATUS);
 
 		return 1;
 	}

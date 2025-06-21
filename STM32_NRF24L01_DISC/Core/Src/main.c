@@ -147,7 +147,7 @@ int main(void)
 	  {
 		  nrf24_Receive(&nrf24, RxData);
 		  HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_All);
-		  printf("Data = %s\n", RxData);
+		  printf("Data = %s", RxData);
 	  }
 	  HAL_Delay(1000);
 	  //////////////////////////////////////
